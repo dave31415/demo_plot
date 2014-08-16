@@ -1,0 +1,101 @@
+<!doctype html>
+<title>Forecast</title>
+<head>
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+<link href={{ url_for('static', filename='c3.css') }} rel="stylesheet" type="text/css">
+
+    <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js">script></script>
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <script src="http://d3js.org/topojson.v1.min.js"></script>
+    <script src="http://d3js.org/d3.geo.projection.v0.min.js" charset="utf-8"></script>
+    <script src="http://trifacta.github.com/vega/vega.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+
+    
+<!-- Bind the Calculate Button to make a calculation. Ajax sending json back and forth  $('a#calculate') -->
+<script type=text/javascript>
+$(function() {
+      $(':button#calculate').bind('click', function() {
+        $.getJSON('/_add_numbers', {
+          a: $('input[name="a"]').val(),
+          b: $('input[name="b"]').val()
+        }, function(data) {
+          $("#result").text(data.result);
+        });
+        return false;
+      });
+});
+</script>
+
+<!-- Bind the Update Button to run parse and remake the top plot only. -->
+
+<script type=text/javascript>
+$(function() {
+      $('input[name="period"]').bind('focusout',function() {
+            parse("/data/multiline", "multiline");
+        });
+        return false;
+});
+
+</script>
+
+</head>
+
+<script src={{ url_for('static', filename='d3.min.js') }} charset="utf-8" ></script>
+<script src={{ url_for('static', filename='c3.min.js') }} ></script>
+
+<div class=page>
+  <h1>Demo - Interaction with python on backend</h1>
+  <h2> 
+    sin( <input type="text" size="5" name="a"> )^2 +
+    cos( <input type="text" size="5" name="b"> )^2 =
+    <span id="result">?</span>
+    <p>
+    <button id="calculate"> Calculate server side with Ajax </button>
+    
+    <!-- Form to remake the whole page with different period -->
+    
+    <form method="POST" action="/">
+        Input period  :<input type="text" value="{{period}}" name="period">
+        Calculated frequency  :{{frequency}}
+        <br> <input type="submit" value="Reload Matplotlib Image / Whole page">
+    </form>
+  </h2>
+  
+    
+    <p> Front-end Vincent D3 Plotting  -  Updates immediately on focus-out of box. <br>
+    Communicates with python backend via Ajax for calculations. <br> PLotting done on front end using
+    vincent API -> vega -> to D3.</p>
+    <div class="container">
+	    <div class="row"><div id="multiline"></div></div>
+    </div>
+    
+    <p> Back-end Matplotlib Plotting  -  Updates only on form submission. <br>
+    Communicates with python backend via form submission for calculations <br> 
+    and matplotlib plot creation and rendering. Image is send back to page. 
+    </p>
+    <div><img src="data:image/png;base64,{{data}}" /></div>
+    
+   <!-- Render the top charts, fetches the latest value in period. -->
+    <script type="text/javascript">
+      function parse(url, div) {
+          var period = $('input[name="period"]').val();
+          period=period
+          vg.parse.spec(url+'?period='+period, function(chart) { 
+              chart({el:"#" + div}).update() 
+              var canvas = $("#" + div).find("canvas")[0];
+              var img = canvas.toDataURL("image/png");     
+          })
+      }
+      
+      parse("/data/multiline", "multiline");
+    </script>
+    
+    
+  
+  
+  {% block body %}{% endblock %}
+  
+</div>
+</html>
