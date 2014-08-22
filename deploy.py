@@ -10,9 +10,9 @@ def deploy(repo_name,app_name=None):
        assumes the app variable in that file is called "app"
        that is, you will have a line in there like 'app = Flask(__name__)' 
     '''
-    if name == None:
+    if app_name == None:
         #might be a different name
-        name=repo_name 
+        app_name=repo_name 
     repo_dir=apache_dir+'/'+repo_name
     wsgi_file=repo_dir+'/'+app_name
     sites_dir="/etc/apache2/sites-available"
